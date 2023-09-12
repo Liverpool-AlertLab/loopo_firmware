@@ -69,6 +69,4 @@ set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY OFF)
 set(CPACK_GENERATOR "ZIP" "TGZ")
 include(CPack)
 
-add_subdirectory(extension)
 add_subdirectory(loop)
-add_subdirectory(twist)

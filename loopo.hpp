@@ -3,8 +3,6 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
 
-#include "extension.hpp"
-#include "twist.hpp"
 #include "loop.hpp"
 
 #include "motor2040.hpp"
@@ -14,35 +12,25 @@
 
 struct actuator_command
 {
-  uint8_t id = 0;
-  uint16_t command = 0;
-  float value = 0.0f;
+    uint8_t id = 0;
+    uint16_t command = 0;
+    float value = 0.0f;
 };
 
 using namespace motor;
 using namespace encoder;
 
-const pin_pair EX_MOTOR_PINS = motor2040::MOTOR_A;
-const pin_pair TR_MOTOR_PINS = motor2040::MOTOR_B;
-const pin_pair TL_MOTOR_PINS = motor2040::MOTOR_C;
 const pin_pair LP_MOTOR_PINS = motor2040::MOTOR_D;
 
 // The pins of the encoder attached to the profiled motor
-const pin_pair EX_ENCODER_PINS = motor2040::ENCODER_A;
-const pin_pair TR_ENCODER_PINS = motor2040::ENCODER_B;
-const pin_pair TL_ENCODER_PINS = motor2040::ENCODER_C;
 const pin_pair LP_ENCODER_PINS = motor2040::ENCODER_D;
 
-const int EX_ENDSTOP_PIN = 19;
-const int TW_ENDSTOP_PIN = 26;
 const int LP_RUNOUT_PIN = 16;
-const int TL_RUNOUT_PIN = 17;
-const int TR_RUNOUT_PIN = 28;
 
 const int FORCE_PIN = motor2040::ADC1;
 
 // The gear ratio of the motor
-constexpr float GEAR_RATIO = 98.0f;
+constexpr float GEAR_RATIO = 298.0f;
 
 // The counts per revolution of the motor's output shaft
 constexpr float COUNTS_PER_REV = MMME_CPR * GEAR_RATIO;
@@ -63,51 +51,51 @@ constexpr float LOG_RATE = 1.0f / (float)LOGS;
 constexpr float COMMAND_RATE = 1.0f / (float)COMMANDS;
 
 // PID values
-constexpr float POS_KP = 0.14f;   // Position proportional (P) gain
-constexpr float POS_KI = 0.0f;    // Position integral (I) gain
-constexpr float POS_KD = 0.002f;  // Position derivative (D) gain
+constexpr float POS_KP = 0.14f;  // Position proportional (P) gain
+constexpr float POS_KI = 0.0f;   // Position integral (I) gain
+constexpr float POS_KD = 0.002f; // Position derivative (D) gain
 
 constexpr float VEL_KP = 30.0f; // Velocity proportional (P) gain
 constexpr float VEL_KI = 0.0f;  // Velocity integral (I) gain
 constexpr float VEL_KD = 0.4f;  // Velocity derivative (D) gain
 
 constexpr float FRC_KP = 2.0f; // Velocity proportional (P) gain
-constexpr float FRC_KI = 0.0f;  // Velocity integral (I) gain
-constexpr float FRC_KD = 0.0f;  // Velocity derivative (D) gain
+constexpr float FRC_KI = 0.0f; // Velocity integral (I) gain
+constexpr float FRC_KD = 0.0f; // Velocity derivative (D) gain
 
 const int BUFFER_LENGTH = 512;
 
 uint16_t read_line(uint8_t *buffer)
 {
-  uint16_t buffer_index = 0;
-  while (true)
-  {
-    int c = getchar_timeout_us(500);
-    if (c != PICO_ERROR_TIMEOUT && buffer_index < BUFFER_LENGTH)
+    uint16_t buffer_index = 0;
+    while (true)
     {
-      buffer[buffer_index++] = c;
+        int c = getchar_timeout_us(500);
+        if (c != PICO_ERROR_TIMEOUT && buffer_index < BUFFER_LENGTH)
+        {
+            buffer[buffer_index++] = c;
+        }
+        else
+        {
+            break;
+        }
     }
-    else
-    {
-      break;
-    }
-  }
-  return buffer_index;
+    return buffer_index;
 }
 
 actuator_command interpret_buffer(uint8_t *buffer, uint16_t end_index)
 {
-  uint16_t value_length = end_index-1;
-  actuator_command message;
-  char id = buffer[0];
-  char command = buffer[1];
-  char value[value_length];
-  for (uint16_t i = 0; i < value_length; i++)
-  {
-    value[i] = buffer[i + 2];
-  }
-  message.id = id - '0';
-  message.command = command - '0';
-  message.value = atof(value);
-  return message;
+    uint16_t value_length = end_index - 1;
+    actuator_command message;
+    char id = buffer[0];
+    char command = buffer[1];
+    char value[value_length];
+    for (uint16_t i = 0; i < value_length; i++)
+    {
+        value[i] = buffer[i + 2];
+    }
+    message.id = id - '0';
+    message.command = command - '0';
+    message.value = atof(value);
+    return message;
 }

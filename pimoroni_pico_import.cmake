@@ -2,7 +2,7 @@
 # It will also set up the required include and module search paths.
 
 if (NOT PIMORONI_PICO_PATH)
-    set(PIMORONI_PICO_PATH "../../pimoroni-pico/")
+    set(PIMORONI_PICO_PATH "../pimoroni-pico/")
 endif()
 
 if(NOT IS_ABSOLUTE ${PIMORONI_PICO_PATH})
